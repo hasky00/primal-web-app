@@ -44,6 +44,7 @@ import { fetchPeople } from '../../megaFeeds';
 import { useAppContext } from '../../contexts/AppContext';
 import LiveEventSidebarSkeleton from '../Skeleton/LiveEventSidebarSkeleton';
 import LivePill from '../LivePill/LivePill';
+import CryptoPrices from '../CryptoPrices/CryptoPrices';
 import { accountStore } from '../../stores/accountStore';
 
 const sidebarOptions = [
@@ -269,6 +270,8 @@ const HomeSidebar: Component< { id?: string } > = (props) => {
 
   return (
     <div id={props.id}>
+      <CryptoPrices />
+
       <Show when={liveEvents.length > 0}>
         <div class={styles.headingLive}>
           <div>
