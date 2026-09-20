@@ -1237,3 +1237,33 @@
   background: var(--background-input);
   animation: skeleton-fade 2500ms linear infinite;
 }
+
+.cryptoPriceSkeleton {
+  width: 100%;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: skeleton-fade 2500ms linear infinite;
+
+  .icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 12px;
+    background-color: var(--devider);
+  }
+
+  .info {
+    flex: 1;
+    height: 14px;
+    border-radius: 7px;
+    background-color: var(--devider);
+  }
+
+  .value {
+    width: 72px;
+    height: 14px;
+    border-radius: 7px;
+    background-color: var(--devider);
+  }
+}
