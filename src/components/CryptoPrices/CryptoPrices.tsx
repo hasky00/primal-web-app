@@ -11,7 +11,7 @@ import { createStore } from 'solid-js/store';
 import styles from './CryptoPrices.module.scss';
 import { hookForDev } from '../../lib/devTools';
 import { logError } from '../../lib/logger';
-import { CryptoCoin, fetchCryptoPrices, topCoinCount } from '../../lib/crypto';
+import { cardCoinCount, CryptoCoin, fetchCryptoPrices } from '../../lib/crypto';
 import { date } from '../../lib/dates';
 import { now } from '../../utils';
 import { useAppContext } from '../../contexts/AppContext';
@@ -31,7 +31,13 @@ const priceFormat = (price: number) => {
   }).format(price);
 };
 
+// Below this a change rounds to 0.00%, and a stablecoin like USDT would
+// otherwise sit under a coloured arrow all day. Show those rows as flat.
+const flatChangeThreshold = 0.005;
+
 const changeFormat = (change: number) => {
+  if (Math.abs(change) < flatChangeThreshold) return '0.00%';
+
   const sign = change > 0 ? '+' : '';
 
   return `${sign}${change.toFixed(2)}%`;
@@ -103,7 +109,16 @@ const CryptoPrices: Component< { id?: string } > = (props) => {
     return diff < 60 ? 'just now' : `${date(timestamp).label} ago`;
   };
 
+  const isFlat = (coin: CryptoCoin) =>
+    Math.abs(coin.change24h) < flatChangeThreshold;
+
   const isUp = (coin: CryptoCoin) => coin.change24h >= 0;
+
+  const changeClass = (coin: CryptoCoin) => {
+    if (isFlat(coin)) return styles.changeFlat;
+
+    return isUp(coin) ? styles.changeUp : styles.changeDown;
+  };
 
   return (
     <div id={props.id} class={styles.cryptoPrices}>
@@ -119,7 +134,7 @@ const CryptoPrices: Component< { id?: string } > = (props) => {
             fallback={<div class={styles.unavailable}>Prices unavailable</div>}
           >
             <div class={styles.list}>
-              <For each={new Array(topCoinCount)}>
+              <For each={new Array(cardCoinCount)}>
                 {() => <CryptoPriceSkeleton />}
               </For>
             </div>
@@ -147,8 +162,10 @@ const CryptoPrices: Component< { id?: string } > = (props) => {
 
                 <div class={styles.coinValue}>
                   <div class={styles.price}>{priceFormat(coin.price)}</div>
-                  <div class={isUp(coin) ? styles.changeUp : styles.changeDown}>
-                    <div class={isUp(coin) ? styles.arrowUp : styles.arrowDown}></div>
+                  <div class={changeClass(coin)}>
+                    <Show when={!isFlat(coin)}>
+                      <div class={isUp(coin) ? styles.arrowUp : styles.arrowDown}></div>
+                    </Show>
                     <span>{changeFormat(coin.change24h)}</span>
                   </div>
                 </div>

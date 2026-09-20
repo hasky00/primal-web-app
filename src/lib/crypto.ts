@@ -18,11 +18,18 @@ type CoinGeckoMarket = {
 
 const coinGeckoMarkets = 'https://api.coingecko.com/api/v3/coins/markets';
 
-// How many top-by-market-cap coins the card leads with.
-export const topCoinCount = 5;
+// The coins the card shows. Listed here in market-cap order, but the order on
+// screen is whatever CoinGecko returns, so the rows follow the market rather
+// than this list.
+export const cardCoinIds = [
+  'bitcoin',
+  'ethereum',
+  'tether',
+  'binancecoin',
+  'monero',
+];
 
-// Coins the card always shows, in this order, even when they miss the top list.
-export const pinnedCoinIds = ['bitcoin', 'ethereum', 'monero'];
+export const cardCoinCount = cardCoinIds.length;
 
 const convertToCoins = (markets: CoinGeckoMarket[]) =>
   markets.reduce<CryptoCoin[]>((acc, market) => {
@@ -59,27 +66,9 @@ const fetchMarkets = async (params: Record<string, string>) => {
   return Array.isArray(markets) ? convertToCoins(markets) : [];
 };
 
-export const fetchCryptoPrices = async () => {
-  const top = await fetchMarkets({
-    order: 'market_cap_desc',
-    per_page: `${topCoinCount}`,
-    page: '1',
-  });
-
-  const missing = pinnedCoinIds.filter(id => !top.some(coin => coin.id === id));
-
-  // Only spend a second request when a pinned coin missed the top list.
-  const pinned = missing.length === 0 ?
-    [] :
-    await fetchMarkets({ ids: missing.join(',') });
-
-  // CoinGecko returns an `ids` query in market-cap order, so re-sort the
-  // pinned coins into the order they are declared in.
-  const orderedPinned = pinnedCoinIds.reduce<CryptoCoin[]>((acc, id) => {
-    const coin = pinned.find(c => c.id === id);
-
-    return coin ? [ ...acc, coin ] : acc;
-  }, []);
-
-  return [ ...top, ...orderedPinned ];
-};
+export const fetchCryptoPrices = async () => await fetchMarkets({
+  ids: cardCoinIds.join(','),
+  order: 'market_cap_desc',
+  per_page: `${cardCoinCount}`,
+  page: '1',
+});

@@ -112,6 +112,11 @@
   color: var(--warning-bright);
 }
 
+.changeFlat {
+  @include change();
+  color: var(--text-tertiary);
+}
+
 @mixin arrow {
   width: 0px;
   height: 0px;
